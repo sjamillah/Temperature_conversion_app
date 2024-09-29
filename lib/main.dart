@@ -25,12 +25,12 @@ class _MyAppState extends State<MyApp> {
         fahTemp = double.tryParse(fahController.text) ?? 0.0;
         celTemp = convert(fahTemp, true);
         celController.text = celTemp.toStringAsFixed(2);
-        history.add('F: ${fahTemp.toStringAsFixed(2)} °F → C: ${celTemp.toStringAsFixed(2)} °C');
+        history.insert(0, 'F: ${fahTemp.toStringAsFixed(2)} °F → C: ${celTemp.toStringAsFixed(2)} °C');
       } else {
         celTemp = double.tryParse(celController.text) ?? 0.0;
         fahTemp = convert(celTemp, false);
         fahController.text = fahTemp.toStringAsFixed(2);
-        history.add('C: ${celTemp.toStringAsFixed(2)} °C → F: ${fahTemp.toStringAsFixed(2)} °F');
+        history.insert(0, 'C: ${celTemp.toStringAsFixed(2)} °C → F: ${fahTemp.toStringAsFixed(2)} °F');
       }
     });
   }
@@ -85,7 +85,7 @@ class _MyAppState extends State<MyApp> {
             ),
           ],
         ),
-        body: Padding(
+        body: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
             children: <Widget>[
@@ -158,38 +158,39 @@ class _MyAppState extends State<MyApp> {
                   padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 15),
                 ),
                 child: const Text(
-                    'Convert',
-                style: const TextStyle(
-                  fontSize: 18
-                ),),
+                  'Convert',
+                  style: const TextStyle(
+                      fontSize: 18
+                  ),),
               ),
               const SizedBox(height: 20),
               // Display Conversion History
-              Expanded(
-                child: ListView.builder(
-                  itemCount: history.length,
-                  itemBuilder: (context, index) {
-                    double value = double.tryParse(
-                      history[index].split(':')[1].split('→')[0].trim().split(' ')[0],
-                    ) ??
-                        0.0;
-                    return Card(
-                      color: const Color(0xFFBB9F06),
-                      margin: const EdgeInsets.symmetric(vertical: 5),
-                      child: ListTile(
-                        leading: getTemperatureIcon(value, isFah),
-                        title: Text(
-                          history[index],
-                          style: const TextStyle(
-                            fontSize: 25,
-                            color: Color(0xFFEFEFD0),
-                            fontWeight: FontWeight.bold,
-                          ),
+              ListView.builder(
+                shrinkWrap: true, // Allow the ListView to take only the space it needs
+                physics: const NeverScrollableScrollPhysics(), // Disable ListView scrolling
+                itemCount: history.length,
+                itemBuilder: (context, index) {
+                  final entry = history[index];
+                  bool isCelsius = entry.contains('C:');
+                  double value = double.tryParse(
+                    entry.split(':')[1].split('→')[0].trim().split(' ')[0],
+                  ) ?? 0.0;
+                  return Card(
+                    color: const Color(0xFFBB9F06),
+                    margin: const EdgeInsets.symmetric(vertical: 5),
+                    child: ListTile(
+                      leading: getTemperatureIcon(value, isCelsius),
+                      title: Text(
+                        history[index],
+                        style: const TextStyle(
+                          fontSize: 25,
+                          color: Color(0xFFEFEFD0),
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
               ),
             ],
           ),
